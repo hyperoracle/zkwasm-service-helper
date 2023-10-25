@@ -13,7 +13,6 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepare": "npm run build",
     "build": "rm -fr dist/* && npx tsc -p tsconfig.json && npx tsc -p tsconfig-cjs.json && sh ./addhybridpackage.sh"
   },
   "main": "dist/cjs/index.js",
@@ -25,6 +24,9 @@
       "require": "./dist/cjs/index.js"
     }
   },
+  "files": [
+    "dist"
+  ],
   "devDependencies": {
     "@types/bn.js": "^5.1.1",
     "@types/node": "^18.11.17",
