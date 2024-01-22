@@ -1,6 +1,6 @@
 {
   "name": "@hyperoracle/zkwasm-service-helper",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "helper lib to communicate with zkwasm cloud service",
   "dependencies": {
     "axios": "^1.2.1",
