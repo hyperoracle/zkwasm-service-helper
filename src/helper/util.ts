@@ -75,6 +75,20 @@ export class ZkWasmUtil {
     return bytes;
   }
 
+  static validateBytesInput(value: string) {
+    this.validateHex(value);
+    // Check the length of the hexdecimal is even
+    if (value.length % 2 != 0) {
+      throw new Error("Odd Hex length provided: " + value);
+    }
+    return true;
+  }
+
+  static validateI64HexInput(value: string) {
+    this.validateHex(value);
+    return true;
+  }
+
   static validateHex(value: string) {
     let re = new RegExp(/^[0-9A-Fa-f]+$/);
     if (value.slice(0, 2) != "0x") {
@@ -84,10 +98,7 @@ export class ZkWasmUtil {
     if (!re.test(value.slice(2))) {
       throw new Error("Invalid hex value: " + value);
     }
-    // Check the length of the hexdecimal is even
-    if (value.length % 2 != 0) {
-      throw new Error("Odd Hex length provided: " + value);
-    }
+
     return true;
   }
 
@@ -106,7 +117,7 @@ export class ZkWasmUtil {
     if (type == "i64") {
       // If 0x is present, check that it is a hexdecimal
       if (value.slice(0, 2) == "0x") {
-        this.validateHex(value);
+        this.validateI64HexInput(value);
       }
       // If 0x is not present, check that it is a decimal
       else {
@@ -115,7 +126,7 @@ export class ZkWasmUtil {
         }
       }
     } else if (type == "bytes" || type == "bytes-packed") {
-      this.validateHex(value);
+      this.validateBytesInput(value);
     } else {
       throw new Error("Invalid input type: " + type);
     }
@@ -238,6 +249,50 @@ export class ZkWasmUtil {
       // do whatever
     }
     return bns;
+  }
+
+  static bnToHexString(bn: BN): string {
+    return "0x" + bn.toString("hex");
+  }
+
+  static bytesToHexStrings(data: Uint8Array, chunksize: number = 32): string[] {
+    let hexStrings = [];
+    let bns = this.bytesToBN(data, chunksize);
+    for (let i = 0; i < bns.length; i++) {
+      hexStrings.push(this.bnToHexString(bns[i]));
+    }
+    return hexStrings;
+  }
+
+  static bnToBytes(bn: BN, chunksize: number = 32): Uint8Array {
+    // Check if the BN is more than expected chunksize bytes
+    if (bn.byteLength() > chunksize) {
+      throw new Error(
+        "BN is too large for the specified chunksize: " + bn.toString(10)
+      );
+    }
+
+    return new Uint8Array(bn.toArray("le", chunksize));
+  }
+
+  static hexStringToBN(hexString: string): BN {
+    // Should begin with 0x
+    this.validateHex(hexString);
+
+    return new BN(hexString.slice(2), 16);
+  }
+
+  static hexStringsToBytes(
+    hexStrings: string[],
+    chunksize: number
+  ): Uint8Array {
+    let bytes = new Uint8Array(chunksize * hexStrings.length);
+    for (let i = 0; i < hexStrings.length; i++) {
+      let bn = this.hexStringToBN(hexStrings[i]);
+      let byte = this.bnToBytes(bn, chunksize);
+      bytes.set(byte, i * chunksize);
+    }
+    return bytes;
   }
 
   static bytesToBigIntArray(
