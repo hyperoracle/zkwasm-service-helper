@@ -1,5 +1,5 @@
 {
-  "name": "@hyperoracle/zkwasm-service-helper",
+  "name": "@ora-io/zkwasm-service-helper",
   "version": "1.0.3",
   "description": "helper lib to communicate with zkwasm cloud service",
   "dependencies": {
